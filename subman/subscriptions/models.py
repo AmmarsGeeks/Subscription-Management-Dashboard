@@ -2,6 +2,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from dateutil.relativedelta import relativedelta
 from django.utils import timezone
+from django.db.models import Case, When, Value, FloatField
 
 class Subscription(models.Model):
     BILLING_CYCLES = [
@@ -21,16 +22,14 @@ class Subscription(models.Model):
             raise ValidationError("Renewal date cannot be in the past")
 
     def save(self, *args, **kwargs):
-        # Calculate renewal date
         if not self.pk:  # Only on creation
             delta = relativedelta(months=1) if self.billing_cycle == 'monthly' else relativedelta(years=1)
             self.renewal_date = self.start_date + delta
         super().save(*args, **kwargs)
 
-    @property
-    def monthly_cost(self):
-        return self.price if self.billing_cycle == 'monthly' else self.price / 12
+    # These are now methods instead of properties for queryset use
+    def get_monthly_cost(self):
+        return float(self.price) if self.billing_cycle == 'monthly' else float(self.price) / 12
 
-    @property
-    def annual_cost(self):
-        return self.price * 12 if self.billing_cycle == 'monthly' else self.price
+    def get_annual_cost(self):
+        return float(self.price) * 12 if self.billing_cycle == 'monthly' else float(self.price)

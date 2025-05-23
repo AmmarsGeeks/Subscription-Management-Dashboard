@@ -5,26 +5,33 @@ from .serializers import SubscriptionSerializer
 from django.db.models import Sum, F, ExpressionWrapper, FloatField
 from django.utils import timezone
 from rest_framework.response import Response
+from django.db.models import Case, When, Value, FloatField
+from django.db.models import DecimalField, Value
+
 
 
 
 def dashboard(request):
     subscriptions = Subscription.objects.filter(is_active=True).annotate(
-        monthly_cost=ExpressionWrapper(
-            F('price') / (12 if F('billing_cycle') == 'annual' else 1),
-            output_field=FloatField()
+        monthly_cost=Case(
+            When(billing_cycle='monthly', then=F('price')),
+            default=ExpressionWrapper(F('price') / Value(12), output_field=DecimalField(max_digits=10, decimal_places=2)),
+            output_field=DecimalField(max_digits=10, decimal_places=2)
         ),
-        annual_cost=ExpressionWrapper(
-            F('price') * (12 if F('billing_cycle') == 'monthly' else 1),
-            output_field=FloatField()
+        annual_cost=Case(
+            When(billing_cycle='monthly', then=ExpressionWrapper(F('price') * Value(12), output_field=DecimalField(max_digits=10, decimal_places=2))),
+            default=F('price'),
+            output_field=DecimalField(max_digits=10, decimal_places=2)
         )
     )
     
     upcoming_renewals = subscriptions.filter(
         renewal_date__lte=timezone.now().date() + timezone.timedelta(days=7)
-    )
+    ).values('name', 'renewal_date', 'price')
     
-    total_monthly = sum(sub.monthly_cost for sub in subscriptions)
+    total_monthly = subscriptions.aggregate(
+        total=Sum('monthly_cost')
+    )['total'] or 0
     
     context = {
         'subscriptions': subscriptions,
@@ -41,6 +48,8 @@ def calculate_annual_savings(queryset):
     potential_annual = sum(sub.annual_cost for sub in monthly_subs)
     current_annual = sum(sub.price * 12 for sub in monthly_subs)
     return current_annual - potential_annual
+
+
 
 class SubscriptionViewSet(viewsets.ModelViewSet):
     queryset = Subscription.objects.filter(is_active=True)

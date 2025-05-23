@@ -4,6 +4,10 @@
 <div class="container">
     <h1>Subscription Dashboard</h1>
     
+    <!-- Debug output (remove in production) -->
+    <pre style="display:none">{{ subscriptions|pprint }}</pre>
+    <pre style="display:none">{{ analytics|pprint }}</pre>
+
     <!-- Summary Cards -->
     <div class="summary">
         <div class="card">
@@ -19,11 +23,15 @@
     <!-- Renewal Alerts -->
     <div class="alerts">
         <h2>Upcoming Renewals (Next 7 Days)</h2>
-        {% for renewal in analytics.upcoming_renewals %}
-        <div class="alert">
-            {{ renewal.name }} - {{ renewal.date }}: {{ renewal.amount }} SAR
-        </div>
-        {% endfor %}
+        {% if analytics.upcoming_renewals %}
+            {% for renewal in analytics.upcoming_renewals %}
+            <div class="alert">
+                {{ renewal.name }} - {{ renewal.renewal_date }}: {{ renewal.price }} SAR
+            </div>
+            {% endfor %}
+        {% else %}
+            <p>No upcoming renewals in the next 7 days</p>
+        {% endif %}
     </div>
 
     <!-- Chart Container -->
@@ -31,20 +39,45 @@
         <canvas id="costChart"></canvas>
     </div>
 </div>
+{% endblock %}
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% block scripts %}
 <script>
-    const ctx = document.getElementById('costChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: [{% for sub in subscriptions %} "{{ sub.name }}", {% endfor %}],
-            datasets: [{
-                label: 'Monthly Cost',
-                data: [{% for sub in subscriptions %} {{ sub.monthly_cost }}, {% endfor %}],
-                backgroundColor: 'rgba(54, 162, 235, 0.2)'
-            }]
-        }
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('costChart').getContext('2d');
+        
+        // Debug output to console
+        console.log("Subscriptions data:", {
+            labels: [{% for sub in subscriptions %}"{{ sub.name }}"{% if not forloop.last %},{% endif %}{% endfor %}],
+            data: [{% for sub in subscriptions %}{{ sub.monthly_cost }}{% if not forloop.last %},{% endif %}{% endfor %}]
+        });
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [{% for sub in subscriptions %}"{{ sub.name }}"{% if not forloop.last %},{% endif %}{% endfor %}],
+                datasets: [{
+                    label: 'Monthly Cost (SAR)',
+                    data: [{% for sub in subscriptions %}{{ sub.monthly_cost }}{% if not forloop.last %},{% endif %}{% endfor %}],
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Monthly Cost (SAR)'
+                        }
+                    }
+                }
+            }
+        });
     });
 </script>
 {% endblock %}
