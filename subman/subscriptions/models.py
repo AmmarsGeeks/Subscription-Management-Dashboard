@@ -21,7 +21,7 @@ class Subscription(models.Model):
             raise ValidationError("Renewal date cannot be in the past")
 
     def save(self, *args, **kwargs):
-        if not self.pk:  # فقط عند الإنشاء
+        if not self.pk:     
             if not self.renewal_date:
                 delta = relativedelta(months=1) if self.billing_cycle == 'monthly' else relativedelta(years=1)
                 self.renewal_date = self.start_date + delta
