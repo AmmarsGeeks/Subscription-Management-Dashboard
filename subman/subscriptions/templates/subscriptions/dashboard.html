@@ -20,19 +20,30 @@
         </div>
     </div>
 
-    <!-- Renewal Alerts -->
-    <div class="alerts">
-        <h2>Upcoming Renewals (Next 7 Days)</h2>
-        {% if analytics.upcoming_renewals %}
+    <h2>All Subscriptions</h2>
+    <ul class="subscriptions-list">
+        {% for sub in subscriptions %}
+        <li>
+            <span>{{ sub.name }} - {{ sub.renewal_date|date:"F j, Y" }}</span>
+            <span class="amount">{{ sub.monthly_cost|floatformat:2 }} SAR/month</span>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <h2>Upcoming Renewals (Next 7 Days)</h2>
+    {% if analytics.upcoming_renewals %}
+        <div class="renewals-list">
             {% for renewal in analytics.upcoming_renewals %}
             <div class="alert">
-                {{ renewal.name }} - {{ renewal.renewal_date }}: {{ renewal.price }} SAR
+                <strong>{{ renewal.name }}</strong> - {{ renewal.renewal_date|date:"F j, Y" }} : 
+                <span class="amount">{{ renewal.price|floatformat:2 }} SAR</span>
             </div>
             {% endfor %}
-        {% else %}
-            <p>No upcoming renewals in the next 7 days</p>
-        {% endif %}
-    </div>
+        </div>
+    {% else %}
+        <p>No upcoming renewals in the next 7 days</p>
+    {% endif %}
+
 
     <!-- Chart Container -->
     <div class="chart">

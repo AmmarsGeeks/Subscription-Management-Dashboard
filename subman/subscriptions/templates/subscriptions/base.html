@@ -34,16 +34,51 @@
         .alerts {
             margin-bottom: 30px;
         }
-        .alert {
-            padding: 10px;
-            margin: 5px 0;
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-        }
+      
         .chart {
             margin-top: 30px;
             height: 400px;
         }
+
+      
+    h1, h2 {
+        color: #222;
+    }
+   
+    .subscriptions-list, .renewals-list {
+        list-style: none;
+        padding: 0;
+        margin: 15px 0 30px;
+        border-top: 1px solid #eee;
+    }
+    .subscriptions-list li, .renewals-list li {
+        padding: 12px 0;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        font-size: 1rem;
+    }
+    .subscriptions-list li:nth-child(even),
+    .renewals-list li:nth-child(even) {
+        background: #fafafa;
+    }
+    .label {
+        font-weight: 600;
+        color: #555;
+    }
+    .amount {
+        font-weight: 700;
+        color: #007bff;
+    }
+    .alert {
+        background: #fff3cd;
+        border-left: 5px solid #ffc107;
+        padding: 12px 15px;
+        margin-bottom: 10px;
+        border-radius: 4px;
+        font-size: 1rem;
+    }
+
     </style>
 </head>
 <body>
