@@ -26,5 +26,5 @@ router.register(r'subscriptions', views.SubscriptionViewSet, basename='subscript
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
-    path('', views.dashboard, name='dashboard'),
+    path('', views.dashboard, name='dashboard'),  
 ]
