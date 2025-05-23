@@ -1,0 +1,50 @@
+{% extends "subscriptions/base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Subscription Dashboard</h1>
+    
+    <!-- Summary Cards -->
+    <div class="summary">
+        <div class="card">
+            <h3>Monthly Total</h3>
+            <p>{{ analytics.total_monthly|floatformat:2 }} SAR</p>
+        </div>
+        <div class="card">
+            <h3>Annual Savings Potential</h3>
+            <p>{{ analytics.annual_savings|floatformat:2 }} SAR</p>
+        </div>
+    </div>
+
+    <!-- Renewal Alerts -->
+    <div class="alerts">
+        <h2>Upcoming Renewals (Next 7 Days)</h2>
+        {% for renewal in analytics.upcoming_renewals %}
+        <div class="alert">
+            {{ renewal.name }} - {{ renewal.date }}: {{ renewal.amount }} SAR
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Chart Container -->
+    <div class="chart">
+        <canvas id="costChart"></canvas>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('costChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: [{% for sub in subscriptions %} "{{ sub.name }}", {% endfor %}],
+            datasets: [{
+                label: 'Monthly Cost',
+                data: [{% for sub in subscriptions %} {{ sub.monthly_cost }}, {% endfor %}],
+                backgroundColor: 'rgba(54, 162, 235, 0.2)'
+            }]
+        }
+    });
+</script>
+{% endblock %}
